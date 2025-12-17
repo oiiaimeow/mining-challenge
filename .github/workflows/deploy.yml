@@ -1,0 +1,75 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Determine basePath
+        id: basepath
+        run: |
+          REPO_NAME="${{ github.repository }}"
+          REPO_OWNER="${{ github.repository_owner }}"
+          REPO_BASENAME=$(basename "$REPO_NAME")
+          
+          if [ "$REPO_BASENAME" = "${REPO_OWNER}.github.io" ]; then
+            echo "basePath=" >> $GITHUB_OUTPUT
+            echo "Repository is a user/organization site, basePath will be empty"
+          else
+            echo "basePath=/$REPO_BASENAME" >> $GITHUB_OUTPUT
+            echo "Repository is a project site, basePath will be /$REPO_BASENAME"
+          fi
+
+      - name: Build
+        working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.basePath }}
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./frontend/out
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

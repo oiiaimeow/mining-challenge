@@ -449,7 +449,7 @@ export const MiningChallengeDemo = () => {
                 {fhevmError && (
                   <InfoRow
                     label="Error"
-                    value={fhevmError}
+                    value={fhevmError.message || fhevmError.toString()}
                     valueColor="text-red-400"
                   />
                 )}
@@ -464,27 +464,27 @@ export const MiningChallengeDemo = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <StatusBadge
                   label="Can Mine"
-                  active={miningChallenge.canMine}
+                  active={Boolean(miningChallenge.canMine)}
                 />
                 <StatusBadge
                   label="Can Decrypt"
-                  active={miningChallenge.canDecrypt}
+                  active={Boolean(miningChallenge.canDecrypt)}
                 />
                 <StatusBadge
                   label="Mining"
-                  active={miningChallenge.isMining}
+                  active={Boolean(miningChallenge.isMining)}
                 />
                 <StatusBadge
                   label="Decrypting"
-                  active={miningChallenge.isDecrypting}
+                  active={Boolean(miningChallenge.isDecrypting)}
                 />
                 <StatusBadge
                   label="Refreshing"
-                  active={miningChallenge.isRefreshing}
+                  active={Boolean(miningChallenge.isRefreshing)}
                 />
                 <StatusBadge
                   label="Calculating Rank"
-                  active={miningChallenge.isCalculatingRank}
+                  active={Boolean(miningChallenge.isCalculatingRank)}
                 />
               </div>
             </div>
